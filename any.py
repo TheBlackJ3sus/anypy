@@ -1,4 +1,3 @@
-import time
 from pywinauto.application import Application
 from pywinauto.findwindows import ElementNotFoundError
 from pywinauto.findbestmatch import MatchError
@@ -46,23 +45,22 @@ for EpisodeTitle, EpisodeDownload in zip(EpisodeList["Title"], EpisodeList["Butt
     print(f'Downloading.. {EpisodeTitle}')
     eval(EpisodeDownload).click()
     DownloadConfig.DownloadButton.click()
-    time.sleep(1)
-    if app.FileExists.exists():
+    if app.FileExists.exists(timeout=10):
         app.FileExists.NoButton.click()
         DownloadWindow.wait('visible', timeout=1000)
         continue
     Progressbar.NetflixProgress.wait('visible')
     mainwindow.minimize()
     before = int(Progressbar.NetflixProgress.legacy_properties()['Value'])
-    print(f'\r Progress... {before / 100}%', end="")
+    print(f'Progress... {before / 100}%', end="")
     while DownloadDone is False:
         after = int(Progressbar.NetflixProgress.legacy_properties()['Value'])
         if after == 10000:
             print('\r Progress... (Download Complete)')
             DownloadDone = True
-        if after != before:
-            print(f'\r Progress... {after / 100}%', end="")
-            before = after
-    print(f'{EpisodeTitle} downloaded.')
-    mainwindow.restore().set_focus()
+        else:
+            if after != before:
+                print(f'\r Progress... {after / 100}%', end="")
+                before = after
+    mainwindow.restore()
     DownloadWindow.wait('visible', timeout=1000)
