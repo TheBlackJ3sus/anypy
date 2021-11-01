@@ -2,16 +2,12 @@ from pywinauto.application import Application
 from pywinauto.findwindows import ElementNotFoundError
 from pywinauto.findbestmatch import MatchError
 import time
-def SelectSeason(DownloadWindow,sn):
-    DownloadWindow.ComboBox.select(f'Season {sn}')
+
+def SelectSeason(DownloadWindow,SeasonList,sn):
+    DownloadWindow.ComboBox.select(SeasonList[sn-1][0])
 
 def GetSeasons(DownloadWindow):
-    NumSeasons = DownloadWindow.ListBox.item_count()
-    SeasonList = []
-    count = 0
-    while count < NumSeasons:
-        count +=1
-        SeasonList.append(f'Season {count}')
+    SeasonList = DownloadWindow.ListBox.texts()
     return SeasonList
     
 def EpiBts(DownloadWindow,ShowName,sn):
@@ -78,7 +74,7 @@ Seasons = GetSeasons(DownloadWindow)
 count = 0
 for dlseason in Seasons:
     count +=1
-    SelectSeason(DownloadWindow,count)
+    SelectSeason(DownloadWindow,Seasons,count)
     time.sleep(1)
     EpiandBtList = EpiBts(DownloadWindow,ShowName,count)
     DownloadEpis(EpiandBtList)
