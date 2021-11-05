@@ -89,6 +89,7 @@ def StartDownload(app,dw,DLConfig,Pbar,EpisodeList,provider):
     for EpisodeTitle, DownloadButton in zip(EpisodeList["Title"], EpisodeList["Button"]):
         DownloadDone = False
         eval(DownloadButton).click()
+        DLConfig.wait('visible', timeout=100)
         DLConfig.DownloadButton.click()
         if app.FileExists.exists():
             app.FileExists.NoButton.click()
