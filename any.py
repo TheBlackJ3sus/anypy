@@ -1,3 +1,4 @@
+import re
 from pywinauto.application import Application
 from pywinauto.findwindows import ElementNotFoundError
 
@@ -28,11 +29,10 @@ def GetProvider(main):
             return foundprovider
 def GottaBlast(sname,sList,Smax,app,dw,DLConfig,Pbar,provider):
     for dlseason in sList:
-        if sList.index(dlseason)+1 > Smax:
-            return
         if sList != ['Amazon']:
-            SelectSeason(dw,sList,sList.index(dlseason)+1)
-            EpisodeList = EpisodeButtons(dw,sname,sList.index(dlseason)+1)
+            num = int(re.findall(r'\d+', str(dlseason))[0])
+            SelectSeason(dw,dlseason[0])
+            EpisodeList = EpisodeButtons(dw,sname,num)
         else:
             EpisodeList = EpisodeButtons(dw,sname,sList[0])
         StartDownload(app,dw,DLConfig,Pbar,EpisodeList,provider)
@@ -47,11 +47,16 @@ def GetSeasons(dw,provider):
         sList = ['Amazon']
         Smax = 1
         return sList,Smax
-    sList = dw.ListBox.texts()
-    if len(sList) == 1:
+    sListtemp =  dw.ListBox.texts()
+    if len(sListtemp) == 1:
         Smax = 1
     else:    
-        Smax = SeasonLimiter(sList)
+        sList = []
+        Smax = SeasonLimiter(sListtemp) 
+        count = int(Smax[0]) -1
+        while count < int(Smax[1]):
+            sList.append(sListtemp[count])
+            count +=1   
     return sList, Smax
 def SeasonLimiter(sList):
     validnumber = False
@@ -69,10 +74,22 @@ def SeasonLimiter(sList):
                 Smax = maxseasons
                 validnumber = True
                 continue
+            if '-' in Smax:
+                Smax = Smax.split('-')
+                try:
+                    int(Smax[0])
+                    int(Smax[1])
+                    validnumber = True
+                    continue
+                except ValueError:
+                    print(f'Something went wrong, try again')
+                    continue       
             print(f'{Smax} is not a number')
+    if isinstance(Smax, int):
+        Smax = [1,Smax]        
     return Smax
-def SelectSeason(dw,sList,snumber):
-    dw.ComboBox.select(sList[snumber-1][0])    
+def SelectSeason(dw,snumber):
+    dw.ComboBox.wait('enabled', timeout=10).select(snumber)    
 def EpisodeButtons(dw,sname,snumber):
     try:
         snumber = int(snumber)
